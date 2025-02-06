@@ -102,6 +102,9 @@ anions <- all.2023.anions %>%
   subset(select = -c(Setting.Type,bromide)) %>% 
   mutate(Event = as.numeric(Event)) #no observable bromide
 
+anions.nitrate <- anions %>% 
+  mutate(nitrate.15 = nitrate / 0.015)
+
 anions.longer <- anions %>% 
   pivot_longer(c(fluoride:sulfate), names_to = "anion", values_to = "ppm") %>% 
   group_by(anion) %>% 
