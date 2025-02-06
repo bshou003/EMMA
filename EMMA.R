@@ -172,6 +172,20 @@ august.2024.cations <- read_excel("~/Documents/Data/2024_Data/Ion.Data/BryceTeto
     str_detect(SITE, regex("MDL")) ~ "lab",
     str_detect(SITE, regex("FB")) ~ "lab",
     TRUE ~ "RG")) %>% 
+  filter(Setting.Type == "RG")
+
+august.2024.cations.leftover <- read_excel("~/Documents/Data/2024_Data/Ion.Data/BryceTetonH2O_names_adjusted.xlsx", sheet = 10, skip = 3) %>% 
+  subset(select =c(1:6)) %>% 
+  rename(SITE = ...1) %>% 
+  mutate(Setting.Type = case_when(
+    str_detect(SITE, regex("DI")) ~ "lab",
+    str_detect(SITE, regex("Cation")) ~ "lab",
+    str_detect(SITE, regex("Standard")) ~ "lab",
+    str_detect(SITE, regex("QC")) ~ "lab",
+    str_detect(SITE, regex("SO")) ~ "lab",
+    str_detect(SITE, regex("MDL")) ~ "lab",
+    str_detect(SITE, regex("FB")) ~ "lab",
+    TRUE ~ "RG")) %>% 
   filter(Setting.Type == "RG") 
 
 september.2024.cations <- read_excel("~/Documents/Data/2024_Data/Ion.Data/BryceTetonH2O_names_adjusted.xlsx", sheet = 8, skip = 3) %>% 
