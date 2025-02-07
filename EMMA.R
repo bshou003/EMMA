@@ -236,8 +236,5 @@ c.a.i <- cations %>%
 
 ggpairs(c.a.i,col = 3:15,, aes(colour = location) )
 
-data(iris)
-ggpairs(iris,                 # Data frame
-        columns = 1:4,        # Columns
-        aes(color = Species,  # Color by group (cat. variable)
-            alpha = 0.5))     # Transparency
+
+####Calculate m.eq for anions####
