@@ -281,4 +281,6 @@ anion.meq <- anion.meq %>%
           nitrate.15 = nitrate / 0.014)
 #adding the meq to check if it goes above the resin value
 anion.meq<-anion.meq %>% 
- dplyr::mutate("SUM_RQ" = rowSums((anion.meq[,3:9]), na.rm = TRUE))
+ dplyr::mutate("SUM_RQ" = rowSums((anion.meq[,3:9]), na.rm = TRUE)) %>% 
+  mutate(Event = as.numeric(Event)) %>% 
+  filter(Event >=10)
