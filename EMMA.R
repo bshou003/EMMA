@@ -99,7 +99,7 @@ anions <- all.2023.anions %>%
   bind_rows(august.2024.anions.leftover) %>% 
   bind_rows(september.2024.anions) %>% 
   separate(SITE, c("location", "Event")) %>% 
-  subset(select = -c(Setting.Type,bromide)) %>% 
+  subset(select = -c(Setting.Type)) %>% 
   mutate(Event = as.numeric(Event)) #no observable bromide
 
 anions.nitrate <- anions %>% 
@@ -238,3 +238,47 @@ ggpairs(c.a.i,col = 3:15,, aes(colour = location) )
 
 
 ####Calculate m.eq for anions####
+#Conversion from Hem, John David. Study and interpretation of the chemical characteristics of natural water. 
+#No. 1473. US Government Printing Office, 1970.
+fd <- 0.05264
+cld <- 0.02821
+no2d <-0.02174
+brd <-0.01251
+no3d <-0.01613
+po4d<-0.01031
+so4d<-0.02082
+
+#Calculating meq with the above values and by the full method
+fl <- all.2023.anions$fluoride* fd
+fl2 <- (all.2023.anions$fluoride*1)/18.998
+cl<- all.2023.anions$chloride*cld
+cl2<- (all.2023.anions$chloride*1)/35.453
+no2 <- all.2023.anions$nitrite * no2d
+no22 <- (all.2023.anions$nitrite * 1) / 46.005
+br <- all.2023.anions$bromide * brd
+br2 <- (all.2023.anions$bromide * 1) /79.904
+no3 <- all.2023.anions$nitrate * no3d
+no32 <- (all.2023.anions$nitrate*1)/62.0049
+po4 <- all.2023.anions$phosphate * po4d
+po42 <- (all.2023.anions$phosphate * 3) / 94.9714
+so4<- all.2023.anions$sulfate * so4d
+so42 <- (all.2023.anions$sulfate * 2)/96.06
+
+#Filtering out samples less than 1 ppm
+anion.meq <- anions %>% 
+  filter(nitrate <= 1)
+anion.meq <- anion.meq %>% 
+  reframe(location = location,
+          Event = as.character(Event),
+          fl = fluoride* fd,
+          cl= chloride*cld,
+          no2 = nitrite * no2d,
+          br =bromide * brd,
+          no3 = nitrate * no3d,
+          po4 = phosphate * po4d,
+          so4= sulfate * so4d,
+          nitrate = nitrate,
+          nitrate.15 = nitrate / 0.014)
+#adding the meq to check if it goes above the resin value
+anion.meq<-anion.meq %>% 
+ dplyr::mutate("SUM_RQ" = rowSums((anion.meq[,3:9]), na.rm = TRUE))
