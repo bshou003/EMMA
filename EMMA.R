@@ -98,18 +98,20 @@ anions <- all.2023.anions %>%
   bind_rows(august.2024.anions) %>% 
   bind_rows(august.2024.anions.leftover) %>% 
   bind_rows(september.2024.anions) %>% 
-  separate(SITE, c("location", "Event")) %>% 
+  separate(SITE, c("location", "Event"), remove = FALSE) %>% 
   subset(select = -c(Setting.Type)) %>% 
   mutate(Event = as.numeric(Event)) #no observable bromide
 
 anions.nitrate <- anions %>% 
-  mutate(nitrate.15 = nitrate / 0.015)
+  #Calculating the concentration in 14 mL
+  mutate(nitrate.15 = nitrate / 0.014)
 
 anions.longer <- anions %>% 
   pivot_longer(c(fluoride:sulfate), names_to = "anion", values_to = "ppm") %>% 
   group_by(anion) %>% 
   mutate(ppm = as.numeric(ppm))
 
+rm(all.2023.anions, august.2024.anions,august.2024.anions.leftover,september.2024.anions,july.2024.anions,june.2024.anions)
 ####Cations###
 all.2023.cations <- read_excel("~/Documents/Data/2023_Data/Ion.Data/BryceTetonH2O_052024.xlsx", sheet = 2, skip = 3) %>% 
   subset(select =c(1:6)) %>% 
@@ -216,25 +218,26 @@ cations.longer <- cations %>%
   group_by(cation) %>% 
   mutate(ppm = as.numeric(ppm))
 
+rm(all.2023.cations, august.2024.cations,august.2024.cations.leftover,september.2024.cations,july.2024.cations,june.2024.cations)
 
-ggplot(data = cations.longer, aes(x= location,y=ppm )) +
-  geom_boxplot() +
-  facet_wrap(~cation, scales = "free_y")
+# ggplot(data = cations.longer, aes(x= location,y=ppm )) +
+#   geom_boxplot() +
+#   facet_wrap(~cation, scales = "free_y")
 
 ####Isotopes####
-iso<-read_csv("~/Documents/Data/Chapter.3/Isotope.Data/isotope.data") %>% 
-  filter(Setting.Type == "Rock Glacier") %>% 
-  separate(SITE, c("location", "event")) %>% 
-  subset(select = -c(seq_position, on, event, Original_name, Setting.Type, month, year))
-
-####Bind###
-c.a.i <- cations %>% 
-  merge(anions) %>% 
-  merge(iso) %>% 
-  subset(select = -c(phosphate))
-
-
-ggpairs(c.a.i,col = 3:15,, aes(colour = location) )
+# iso<-read_csv("~/Documents/Data/Chapter.3/Isotope.Data/isotope.data") %>% 
+#   filter(Setting.Type == "Rock Glacier") %>% 
+#   separate(SITE, c("location", "event")) %>% 
+#   subset(select = -c(seq_position,event, Setting.Type, month, year))
+# 
+# ####Bind###
+# c.a.i <- cations %>% 
+#   merge(anions) %>% 
+#   merge(iso) %>% 
+#   subset(select = -c(phosphate))
+# 
+# 
+# ggpairs(c.a.i,col = 3:15,, aes(colour = location) )
 
 
 ####Calculate m.eq for anions####
@@ -284,3 +287,17 @@ anion.meq<-anion.meq %>%
  dplyr::mutate("SUM_RQ" = rowSums((anion.meq[,3:9]), na.rm = TRUE)) %>% 
   mutate(Event = as.numeric(Event)) %>% 
   filter(Event >=10)
+
+####2025/02/11 Resin####
+
+resin20250211 <- read_excel("~/Documents/Data/Chapter.1/resin_concentration/20250211_samples/resin_preconcentration_20250211.xlsx", sheet = 1) %>% 
+  #assuming 1 gram = 1 mL, 106.63 is the average weight of a sample bottle, from a sample size of 3
+  mutate(sample_processed_ml = intial.wt.g - final.btl.wt.g) %>% 
+  merge(anions) %>% 
+  subset(select = c(SITE, sample_processed_ml,nitrate)) %>% 
+  #Calculating the concentration of the final volume in 14 mL
+  mutate(concentration = (sample_processed_ml * nitrate)/ 14,
+         #From the resin v no resin test, we need at least 0.045 mg NO3 in 14 mL to run triplicates
+         #multiplying concentration (mg/l) by amount of sample processed(l), yielding amount of nitrate
+         amount_of_no3_mg = (sample_processed_ml/1000) * nitrate)
+
